@@ -7,9 +7,13 @@ DIRECTIONS = [(x, y) for y in range(1, -2, -1) for x in range(-1, 2)]
 
 
 class ImageEnhancer:
+
     def __init__(self, image_points: set, enhancement_algorithm: np.array) -> None:
         self.image_points = image_points
         self.enhancement_algorithm = enhancement_algorithm
+
+        self.enhancement_count = 0
+        self.is_algorithm_devilish = enhancement_algorithm[0] and not enhancement_algorithm[-1]
 
     def enhance(self) -> None:
         (x_min, y_min), (x_max, y_max) = self.get_extreme_points()
@@ -26,6 +30,11 @@ class ImageEnhancer:
                     new_x = x + x_d
                     new_y = y + y_d
 
+                    if self.is_algorithm_devilish and self.enhancement_count % 2 == 1:
+                        if new_x < x_min or new_x > x_max or new_y < y_min or new_y > y_max:
+                            binary_number += "1"
+                            continue
+
                     if (new_x, new_y) in self.image_points:
                         binary_number += "1"
 
@@ -35,6 +44,7 @@ class ImageEnhancer:
                 if self.enhancement_algorithm[int(binary_number, 2)]:
                     new_image_points.add((x, y))
 
+        self.enhancement_count += 1
         self.image_points = new_image_points
 
 
@@ -79,7 +89,12 @@ def task1(image_points: set, enhancement_algorithm: np.array) -> None:
 
 
 def task2(image_points: set, enhancement_algorithm: np.array) -> None:
-    pass
+    image_enhancer = ImageEnhancer(image_points, enhancement_algorithm)
+
+    for _ in range(50):
+        image_enhancer.enhance()
+
+    print(len(image_enhancer.image_points))
 
 
 def main() -> None:
@@ -97,7 +112,8 @@ def main() -> None:
 
         enhancement_algorithm = np.array([char == "#" for char in segments[0].replace("\n", "")], dtype=np.bool)
 
-    task1(image_points, enhancement_algorithm)
+    # task1(image_points, enhancement_algorithm)
+    task2(image_points, enhancement_algorithm)
 
     
 
